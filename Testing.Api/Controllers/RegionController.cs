@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Testing.Api.Data;
+using Testing.Api.Models.Domains;
 using Testing.Api.Models.DTO;
 
 namespace Testing.Api.Controllers
@@ -23,8 +24,6 @@ namespace Testing.Api.Controllers
         {
             var regions = dbContext.Regions.ToList();
 
-            // Map Domain Models to DTOs
-
             var regionDtos = new List<RegionDto>();
 
             foreach (var region in regions)
@@ -38,8 +37,6 @@ namespace Testing.Api.Controllers
                 });
             }
 
-
-            // return DTOs
             return Ok(regionDtos);
         }
 
@@ -56,7 +53,6 @@ namespace Testing.Api.Controllers
             }
 
 
-            // Map entity to DTO
             var regionDto = new RegionDto()
             {
                 Id = region.Id,
@@ -67,6 +63,44 @@ namespace Testing.Api.Controllers
 
 
             return Ok(regionDto);
+        }
+
+
+
+        // POST: api/Region
+        [HttpPost]
+        public IActionResult Create([FromBody] AddRegionRequestDto addRegionRequestDto)
+        {
+            // Map DTO to Domain Model
+
+            var region = new Region()
+            {
+                Code = addRegionRequestDto.Code,
+                Name = addRegionRequestDto.Name,
+                RegionImageUrl = addRegionRequestDto.RegionImageUrl
+            };
+
+
+            // Save to database
+
+            dbContext.Regions.Add(region);
+            dbContext.SaveChanges();
+
+
+            // Convert Domain Model back to DTO
+
+            var regionDto = new RegionDto()
+            {
+                Id = region.Id,
+                Code = region.Code,
+                Name = region.Name,
+                RegionImageUrl = region.RegionImageUrl
+            };
+
+
+            return CreatedAtAction(nameof(GetById),
+                new { id = regionDto.Id },
+                regionDto);
         }
     }
 }
