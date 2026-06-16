@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Update.Internal;
 using Testing.Api.Data;
 using Testing.Api.Models.Domains;
 using Testing.Api.Models.DTO;
@@ -102,5 +103,42 @@ namespace Testing.Api.Controllers
                 new { id = regionDto.Id },
                 regionDto);
         }
+
+
+        //Update Region
+        // Update Region
+        [HttpPut]
+        [Route("{id:guid}")]
+        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateDto)
+        {
+            // Find region in DB
+            var region = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+
+            if (region == null)
+            {
+                return NotFound();
+            }
+
+            // Update fields
+            region.Code = updateDto.Code;
+            region.Name = updateDto.Name;
+            region.RegionImageUrl = updateDto.RegionImageUrl;
+
+            // Save changes
+            dbContext.SaveChanges();
+
+            // Map to DTO
+            var regionDto = new RegionDto()
+            {
+                Id = region.Id,
+                Code = region.Code,
+                Name = region.Name,
+                RegionImageUrl = region.RegionImageUrl
+            };
+
+            return Ok(regionDto);
+        }
+
     }
+    
 }
